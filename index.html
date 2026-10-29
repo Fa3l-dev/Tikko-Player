@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tikko Player</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Leitor de capas e metadados offline (.mp3) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+</head>
+<body>
+
+  <div class="mobile-frame">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+      <div class="logo-wrapper">
+        <svg class="logo-icon" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent-color)" stroke-width="5"/>
+          <path d="M35 30 L35 70 L70 50 Z" fill="var(--accent-color)"/>
+        </svg>
+        <h1>TIKKO<span>PLAYER</span></h1>
+      </div>
+      <div class="loader-bar"><div class="loader-progress"></div></div>
+      <div class="splash-footer">
+        <p class="by-author">By Fa3l</p>
+        <span class="version-badge">beta</span>
+      </div>
+    </div>
+
+    <!-- CABEÇALHO -->
+    <header>
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent-color)" stroke-width="8"/>
+          <path d="M38 32 L38 68 L68 50 Z" fill="var(--accent-color)"/>
+        </svg>
+        <span>Tikko Player</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-folder" onclick="solicitarAcessoArquivos()">📁 Pasta</button>
+        <button class="btn-settings" onclick="abrirModalConfiguracoes()">⚙️</button>
+      </div>
+    </header>
+
+    <!-- NAVEGAÇÃO DE ABAS -->
+    <nav class="nav-tabs">
+      <button id="tab-btn-playlists" class="tab-btn active" onclick="mudarAba('playlists')">Playlists</button>
+      <button id="tab-btn-cancoes" class="tab-btn" onclick="mudarAba('cancoes')">Todas as Canções</button>
+    </nav>
+
+    <!-- ABA 1: PLAYLISTS -->
+    <main id="view-playlists_list" class="view active">
+      <div class="section-title">
+        <h2>Sua Biblioteca</h2>
+        <button class="btn-primary" onclick="criarPlaylist()">+ Nova Playlist</button>
+      </div>
+      <div id="grid-playlists" class="playlists-list-stack"></div>
+    </main>
+
+    <!-- ABA 2: TODAS AS CANÇÕES -->
+    <main id="view-cancoes_list" class="view">
+      <div class="section-title">
+        <h2>Todas as Músicas</h2>
+        <span id="total-cancoes-count" class="subtexto-count">0 faixas</span>
+      </div>
+      <ul id="all-songs-list" class="songs-list"></ul>
+    </main>
+
+    <!-- ABA 3: DENTRO DA PLAYLIST -->
+    <main id="view-playlist_detail" class="view">
+      <div class="detail-header">
+        <button class="btn-back" onclick="voltarParaPlaylists()">← Voltar</button>
+        <h2 id="playlist-title-display">Nome da Playlist</h2>
+        <button class="btn-secondary" onclick="abrirModalAdicionar()">+ Adicionar</button>
+      </div>
+
+      <div class="playlist-playback-controls">
+        <button class="btn-play-all" onclick="tocarPlaylistNormal()">▶ Reproduzir</button>
+        <button class="btn-shuffle-all" onclick="tocarPlaylistAleatorio()">🔀 Aleatório</button>
+      </div>
+
+      <ul id="playlist-songs-list" class="songs-list"></ul>
+    </main>
+
+    <!-- MINI PLAYER -->
+    <footer id="mini-player" class="mini-player" onclick="abrirPlayerFull()">
+      <div id="mini-cover-container" class="mini-cover-box"></div>
+      <div class="mini-info">
+        <span id="mini-title">Nenhuma música</span>
+        <span id="mini-artist">Selecione uma faixa</span>
+      </div>
+      <div class="mini-controls" onclick="event.stopPropagation();">
+        <button id="mini-btn-play" onclick="togglePlay()">▶</button>
+      </div>
+    </footer>
+
+    <!-- FULL PLAYER -->
+    <div id="full-player" class="full-player hidden">
+      <button class="btn-close-full" onclick="fecharPlayerFull()">↓</button>
+      
+      <div class="full-content">
+        <div id="full-cover-container" class="cover-wrapper"></div>
+
+        <div class="song-details">
+          <h2 id="full-title">Título da Música</h2>
+          <p id="full-artist">Nome do Artista</p>
+        </div>
+
+        <div class="progress-container">
+          <input type="range" id="progress-bar" value="0" min="0" max="100" onchange="seekAudio(this.value)">
+          <div class="time-info">
+            <span id="time-current">0:00</span>
+            <span id="time-total">0:00</span>
+          </div>
+        </div>
+
+        <div class="full-controls">
+          <button class="control-btn" onclick="prevSong()">⏮</button>
+          <button id="full-btn-play" class="control-btn play-main" onclick="togglePlay()">▶</button>
+          <button class="control-btn" onclick="nextSong()">⏭</button>
+        </div>
+
+        <div class="lyrics-container">
+          <h3>Letra</h3>
+          <p id="lyrics-text">Selecione uma música para ver a letra.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE OPÇÕES DA PLAYLIST -->
+    <div id="modal-opcoes-playlist" class="modal hidden" onclick="fecharModalPlaylist()">
+      <div class="modal-card-bottom" onclick="event.stopPropagation();">
+        <h4 id="opcoes-playlist-titulo">Opções da Playlist</h4>
+        <button class="btn-option-full" onclick="selecionarCapaPlaylist()">🖼️ Alterar Capa da Playlist</button>
+        <button class="btn-danger-full" onclick="excluirPlaylistAtiva()">🗑️ Excluir Playlist</button>
+        <button class="btn-cancel-full" onclick="fecharModalPlaylist()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- MODAL DE OPÇÕES DA MÚSICA DENTRO DA PLAYLIST -->
+    <div id="modal-opcoes-musica" class="modal hidden" onclick="fecharModalOpcoes()">
+      <div class="modal-card-bottom" onclick="event.stopPropagation();">
+        <h4 id="opcoes-musica-titulo">Opções da Música</h4>
+        <button class="btn-danger-full" onclick="removerMusicaDaPlaylistAtiva()">🗑️ Remover da Playlist</button>
+        <button class="btn-cancel-full" onclick="fecharModalOpcoes()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- INPUT OCULTO PARA FOTO DA PLAYLIST -->
+    <input type="file" id="input-capa-playlist" accept="image/*" style="display:none;" onchange="aplicarCapaPlaylist(event)">
+
+    <!-- CONFIGURAÇÕES -->
+    <div id="modal-configuracoes" class="modal hidden" onclick="fecharModalConfiguracoes()">
+      <div class="modal-card-bottom" onclick="event.stopPropagation();">
+        <h3>⚙️ Configurações</h3>
+        <p class="subtexto">Personalizar Tema do App:</p>
+        
+        <div class="theme-picker-grid">
+          <button class="theme-btn" style="background: #1db954;" onclick="aplicarTemaPredefinido('#1db954')">Verde Tikko</button>
+          <button class="theme-btn" style="background: #a855f7;" onclick="aplicarTemaPredefinido('#a855f7')">Roxo Cyber</button>
+          <button class="theme-btn" style="background: #06b6d4;" onclick="aplicarTemaPredefinido('#06b6d4')">Azul Neon</button>
+          <button class="theme-btn" style="background: #f97316;" onclick="aplicarTemaPredefinido('#f97316')">Laranja Fogo</button>
+          <button class="theme-btn" style="background: #ef4444;" onclick="aplicarTemaPredefinido('#ef4444')">Vermelho Ruby</button>
+          <button class="theme-btn" style="background: #333333;" onclick="aplicarTemaPredefinido('#333333')">Escuro Puro</button>
+        </div>
+
+        <button class="btn-cancel-full" onclick="fecharModalConfiguracoes()">Fechar</button>
+      </div>
+    </div>
+
+    <!-- PERMISSÃO -->
+    <div id="modal-permissao" class="modal hidden">
+      <div class="modal-card">
+        <div class="icon-permission">🎵</div>
+        <h3>Acesso às Músicas</h3>
+        <p>O Tikko Player precisa carregar os arquivos de áudio do seu dispositivo.</p>
+        <button class="btn-primary full-width" onclick="solicitarAcessoArquivos()">Selecionar Pasta de Músicas</button>
+      </div>
+    </div>
+
+    <!-- ADICIONAR MÚSICAS -->
+    <div id="modal-adicionar" class="modal hidden">
+      <div class="modal-content">
+        <h3>Adicionar Músicas</h3>
+        <p class="subtexto">Toque na música para incluir nesta playlist:</p>
+        <ul id="modal-lista-musicas" class="songs-list-select"></ul>
+        <button class="btn-secondary full-width" onclick="fecharModal()">Concluído</button>
+      </div>
+    </div>
+
+  </div>
+
+  <audio id="main-audio"></audio>
+  <script src="script.js"></script>
+</body>
+</html>
