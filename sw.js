@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tikko-v1';
+const CACHE_NAME = 'tikko-player-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -8,16 +8,20 @@ const ASSETS = [
   './manifest.json'
 ];
 
-// Salva todos os arquivos na memória do celular na hora da instalação
+// Instalação do Service Worker e salvamento dos ficheiros em cache local
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS);
+    })
   );
 });
 
-// Responde sempre com os arquivos locais do celular, sem buscar na internet
+// Interceção de requisições: entrega do cache quando estiver sem internet
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((res) => res || fetch(e.request))
+    caches.match(e.request).then((response) => {
+      return response || fetch(e.request);
+    })
   );
 });
