@@ -5,8 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tikko Player</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Leitor de capas e metadados offline (.mp3) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+  
+  <!-- Configuração PWA (Offline & Instalação NAtiva) -->
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+
+  <!-- Biblioteca Local Offline de Metadados -->
+  <script src="jsmediatags.min.js"></script>
 </head>
 <body>
 
@@ -123,7 +132,7 @@
 
         <div class="lyrics-container">
           <h3>Letra</h3>
-          <p id="lyrics-text">Selecione uma música para ver a letra.</p>
+          <p id="lyrics-text">Letra indisponível no modo offline.</p>
         </div>
       </div>
     </div>
